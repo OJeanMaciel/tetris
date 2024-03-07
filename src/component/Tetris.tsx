@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
 import tetrisTheme from '../assets/Tetris.mp3';
 
-
 const ROWS = 20;
 const COLS = 10;
 const BLOCK_SIZE = 30;
@@ -21,9 +20,9 @@ const SHAPES = [
 const createEmptyGrid = () => Array.from({ length: ROWS }, () => Array(COLS).fill(0));
 
 const Tetris = () => {
-    const canvasRef = useRef(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
     const [grid, setGrid] = useState(createEmptyGrid());
-    const [currentPiece, setCurrentPiece] = useState(null);
+    const [currentPiece, setCurrentPiece] = useState<{ shape: number[][], color: string } | null>(null);
     const [currentPosition, setCurrentPosition] = useState({ x: 0, y: 0 });
     const [linesRemoved, setLinesRemoved] = useState(0);
     const [isGameOver, setIsGameOver] = useState(false);
@@ -33,41 +32,31 @@ const Tetris = () => {
 
     useEffect(() => {
         audioRef.current.loop = true;
-        audioRef.current.play();
-    }, []);
-
-    const toggleAudio = () => {
-        setIsSoundOn(!isSoundOn);
-        if (!isSoundOn) {
+        if (isSoundOn) {
             audioRef.current.play();
         } else {
             audioRef.current.pause();
         }
-    };
+    }, [isSoundOn]);
 
-
-    function toggleSound() {
+    const toggleAudio = () => {
         setIsSoundOn(!isSoundOn);
-    }
+    };
 
     useEffect(() => {
         const savedSoundPreference = localStorage.getItem('isSoundOn');
-        if (savedSoundPreference === 'false') {
-            setIsSoundOn(false);
-        }
+        setIsSoundOn(savedSoundPreference !== 'false');
     }, []);
 
     useEffect(() => {
-        localStorage.setItem('isSoundOn', isSoundOn);
+        localStorage.setItem('isSoundOn', isSoundOn.toString());
     }, [isSoundOn]);
 
     useEffect(() => {
-        let gameAudio = new Audio(tetrisTheme);
-    });
-
-    useEffect(() => {
         const canvas = canvasRef.current;
+        if (!canvas) return;
         const context = canvas.getContext('2d');
+        if (!context) return;
 
         context.clearRect(0, 0, canvas.width, canvas.height);
         drawGrid(context);
@@ -81,7 +70,7 @@ const Tetris = () => {
     }, [grid, currentPiece, currentPosition]);
 
     useEffect(() => {
-        const handleKeyDown = (event) => {
+        const handleKeyDown = (event: KeyboardEvent) => {
             switch (event.keyCode) {
                 case 37: // left arrow
                     moveLeft();
@@ -99,15 +88,16 @@ const Tetris = () => {
                     break;
             }
         };
-
+    
         document.addEventListener('keydown', handleKeyDown);
-
+    
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
         };
     }, [currentPiece, currentPosition, grid]);
+    
 
-    const handleTouchStart = (event) => {
+    const handleTouchStart = (event: React.TouchEvent<HTMLCanvasElement>) => {
         const touchX = event.touches[0].clientX;
         const middleX = window.innerWidth / 2;
 
@@ -118,11 +108,11 @@ const Tetris = () => {
         }
     };
 
-    const handleTouchEnd = (event) => {
+    const handleTouchEnd = () => {
         rotatePiece();
     };
 
-    const drawGrid = (context) => {
+    const drawGrid = (context: CanvasRenderingContext2D) => {
         for (let y = 0; y < ROWS; y++) {
             for (let x = 0; x < COLS; x++) {
                 context.fillStyle = grid[y][x] ? COLORS[grid[y][x]] : '#FFFFFF';
@@ -133,7 +123,7 @@ const Tetris = () => {
         }
     };
 
-    const drawPiece = (context) => {
+    const drawPiece = (context: CanvasRenderingContext2D) => {
         if (!currentPiece) return;
         currentPiece.shape.forEach((row, y) => {
             row.forEach((cell, x) => {
@@ -158,12 +148,12 @@ const Tetris = () => {
                 setCurrentPiece(newPiece);
                 setCurrentPosition({ x: 4, y: 0 });
             } else {
-                setIsGameOver(true); // Define o jogo como terminado
+                setIsGameOver(true); // Game Over
             }
         }
     };
 
-    const canMove = (x, y, shape) => {
+    const canMove = (x: number, y: number, shape: number[][]) => {
         return shape.every((row, dy) =>
             row.every((cell, dx) => {
                 let newX = x + dx;
@@ -235,7 +225,7 @@ const Tetris = () => {
 
     const generateRandomPiece = () => {
         const shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
-        const color = COLORS[Math.floor(Math.random() * (COLORS.length - 1))];
+        const color = COLORS[Math.floor(Math.random() * (COLORS.length - 1)) + 1];
         return { shape, color };
     };
 
