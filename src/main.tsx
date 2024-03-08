@@ -5,7 +5,7 @@ import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-  <div>
+  <div style={{marginBottom: '70px'}}>
     <h1>Tetris Game</h1>
     <Tetris />
   </div>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
+import { FaArrowDown, FaArrowLeft, FaArrowRight, FaArrowUp, FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
 import tetrisTheme from '../assets/Tetris.mp3';
 
 const ROWS = 20;
@@ -27,8 +27,13 @@ const Tetris = () => {
     const [linesRemoved, setLinesRemoved] = useState(0);
     const [isGameOver, setIsGameOver] = useState(false);
 
-    const [isSoundOn, setIsSoundOn] = useState(true);
+    const [isSoundOn, setIsSoundOn] = useState(false);
     const audioRef = useRef(new Audio(tetrisTheme));
+
+
+    const toggleAudio = () => {
+        setIsSoundOn(!isSoundOn);
+    };
 
     useEffect(() => {
         audioRef.current.loop = true;
@@ -37,19 +42,6 @@ const Tetris = () => {
         } else {
             audioRef.current.pause();
         }
-    }, [isSoundOn]);
-
-    const toggleAudio = () => {
-        setIsSoundOn(!isSoundOn);
-    };
-
-    useEffect(() => {
-        const savedSoundPreference = localStorage.getItem('isSoundOn');
-        setIsSoundOn(savedSoundPreference !== 'false');
-    }, []);
-
-    useEffect(() => {
-        localStorage.setItem('isSoundOn', isSoundOn.toString());
     }, [isSoundOn]);
 
     useEffect(() => {
@@ -225,7 +217,7 @@ const Tetris = () => {
 
     const generateRandomPiece = () => {
         const shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
-        const color = COLORS[Math.floor(Math.random() * (COLORS.length - 1)) + 1];
+        const color = COLORS[Math.floor(Math.random() * (COLORS.length - 1))];
         return { shape, color };
     };
 
@@ -239,14 +231,13 @@ const Tetris = () => {
 
     return (
         <>
-
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>Score: {linesRemoved}</span>
                 <button onClick={toggleAudio}>
                     {isSoundOn ? <FaVolumeUp /> : <FaVolumeMute />}
                 </button>
             </div>
-
+    
             <canvas
                 ref={canvasRef}
                 width={COLS * BLOCK_SIZE}
@@ -255,6 +246,14 @@ const Tetris = () => {
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
             ></canvas>
+    
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '10px' }}>
+                <button onClick={rotatePiece}><FaArrowUp /></button>
+                <button onClick={moveLeft}><FaArrowLeft /></button>
+                <button onClick={moveRight}><FaArrowRight /></button>
+                <button onClick={moveDown}><FaArrowDown /></button>
+            </div>
+    
             {isGameOver && (
                 <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', backgroundColor: '#0bbdc4', padding: '20px', borderRadius: '10px', textAlign: 'center' }}>
                     <h2>Game Over</h2>
@@ -264,7 +263,6 @@ const Tetris = () => {
             )}
         </>
     );
-
 };
 
 export default Tetris;
